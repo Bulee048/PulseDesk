@@ -6,17 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Support\Facades\DB;
+use App\Traits\BelongsToOrganization;
 
-#[Fillable(['subject', 'description', 'status', 'priority', 'category_id', 'customer_id', 'agent_id', 'resolved_at'])]
+#[Fillable(['subject', 'description', 'status', 'priority', 'category_id', 'customer_id', 'agent_id', 'resolved_at', 'organization_id'])]
 class Ticket extends Model
 {
+    use BelongsToOrganization;
     protected static function booted(): void
     {
         static::saved(function (Ticket $ticket) {
-            DB::statement(
-                "UPDATE tickets SET search_vector = to_tsvector('english', coalesce(subject, '') || ' ' || coalesce(description, '')) WHERE id = ?",
-                [$ticket->id]
-            );
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                DB::statement(
+                    "UPDATE tickets SET search_vector = to_tsvector('english', coalesce(subject, '') || ' ' || coalesce(description, '')) WHERE id = ?",
+                    [$ticket->id]
+                );
+            }
         });
     }
 

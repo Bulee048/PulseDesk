@@ -13,6 +13,10 @@ class TicketDetail extends Component
 
     public function mount(Ticket $ticket)
     {
+        if (!$ticket->exists || $ticket->organization_id !== app(\App\Models\Organization::class)->id) {
+            abort(404);
+        }
+        
         $this->ticket = $ticket;
     }
 

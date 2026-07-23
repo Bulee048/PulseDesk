@@ -73,3 +73,28 @@ php artisan serve
 ## License
 
 This project is open-source software.
+
+
+
+1. Super Admin (Platform Management)
+Use this to see all registered organizations and test the impersonation feature.
+
+URL: http://admin.localhost:8000/login
+Email: super@pulsedesk.local
+Password: password
+2. Demo Organization (Demo Co)
+Use these to test the actual ticketing and helpdesk functionality on a tenant subdomain.
+
+URL: http://demo-co.localhost:8000/login
+Login as Org Admin: (Can write KB articles & view all tickets)
+
+Email: admin@demo.com
+Password: password
+Login as Agent: (Can reply to and manage tickets)
+
+Email: agent@demo.com
+Password: password
+Login as Customer: (Can open new tickets)
+
+Email: customer@demo.com
+Password: password

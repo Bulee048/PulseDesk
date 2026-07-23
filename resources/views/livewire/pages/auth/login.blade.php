@@ -36,12 +36,14 @@ new #[Layout('layouts.guest')] class extends Component
     protected function redirectBasedOnRole()
     {
         $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user->hasRole('admin')) {
-            $this->redirectIntended(default: route('admin.dashboard', absolute: false), navigate: true);
+        if ($user->hasRole('super_admin')) {
+            $this->redirectIntended(default: route('super.dashboard'), navigate: true);
+        } elseif ($user->hasRole('org_admin')) {
+            $this->redirectIntended(default: route('admin.dashboard', ['tenant' => $user->organization->slug]), navigate: true);
         } elseif ($user->hasRole('agent')) {
-            $this->redirectIntended(default: route('agent.dashboard', absolute: false), navigate: true);
+            $this->redirectIntended(default: route('agent.dashboard', ['tenant' => $user->organization->slug]), navigate: true);
         } else {
-            $this->redirectIntended(default: route('tickets.index', absolute: false), navigate: true);
+            $this->redirectIntended(default: route('tickets.index', ['tenant' => $user->organization->slug]), navigate: true);
         }
     }
 }; ?>
@@ -73,14 +75,14 @@ new #[Layout('layouts.guest')] class extends Component
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember" class="inline-flex items-center">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-line text-signal shadow-sm focus:ring-signal" name="remember">
+                <span class="ms-2 text-sm text-slate">{{ __('Remember me') }}</span>
             </label>
         </div>
 
         <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}" wire:navigate>
+                <a class="underline text-sm text-slate hover:text-ink rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-signal" href="{{ route('password.request') }}" wire:navigate>
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
@@ -92,16 +94,19 @@ new #[Layout('layouts.guest')] class extends Component
     </form>
 
     <div class="mt-8 border-t pt-6">
-        <h3 class="text-sm font-medium text-gray-900 mb-4 text-center">Demo Logins</h3>
+        <h3 class="text-sm font-medium text-ink mb-4 text-center font-heading">Demo Logins</h3>
         <div class="flex flex-col space-y-2">
-            <button wire:click="loginAs('customer@demo.com')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+            <button wire:click="loginAs('customer@demo.com')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-white border border-line rounded-md font-semibold text-xs font-mono text-slate uppercase tracking-widest shadow-sm hover:bg-cloud focus:outline-none focus:ring-2 focus:ring-signal focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
                 Login as Demo Customer
             </button>
-            <button wire:click="loginAs('agent@demo.com')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-50 border border-blue-300 rounded-md font-semibold text-xs text-blue-700 uppercase tracking-widest shadow-sm hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+            <button wire:click="loginAs('agent@demo.com')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-50 border border-signal rounded-md font-semibold text-xs font-mono text-signal uppercase tracking-widest shadow-sm hover:bg-signal focus:outline-none focus:ring-2 focus:ring-signal focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
                 Login as Demo Agent
             </button>
-            <button wire:click="loginAs('admin@demo.com')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-purple-50 border border-purple-300 rounded-md font-semibold text-xs text-purple-700 uppercase tracking-widest shadow-sm hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+            <button wire:click="loginAs('admin@demo.com')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-purple-50 border border-purple-300 rounded-md font-semibold text-xs font-mono text-purple-700 uppercase tracking-widest shadow-sm hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-signal focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150 mb-3">
                 Login as Demo Admin
+            </button>
+            <button wire:click="loginAs('super@pulsedesk.local')" class="w-full inline-flex justify-center items-center px-4 py-2 bg-red-50 border border-ember rounded-md font-semibold text-xs font-mono text-ember uppercase tracking-widest shadow-sm hover:bg-ember focus:outline-none focus:ring-2 focus:ring-signal focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                Login as Super Admin
             </button>
         </div>
     </div>

@@ -29,6 +29,9 @@ new #[Layout('layouts.guest')] class extends Component
         $validated['password'] = Hash::make($validated['password']);
         $validated['role'] = 'customer';
 
+        $organization = app(\App\Models\Organization::class);
+        $validated['organization_id'] = $organization->id;
+
         $user = User::create($validated);
         $user->assignRole('customer');
 
@@ -36,7 +39,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         Auth::login($user);
 
-        $this->redirect(route('tickets.index', absolute: false), navigate: true);
+        $this->redirect(route('tickets.index', ['tenant' => $organization->slug]), navigate: true);
     }
 }; ?>
 
@@ -80,7 +83,7 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}" wire:navigate>
+            <a class="underline text-sm text-slate hover:text-ink rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-signal" href="{{ route('login') }}" wire:navigate>
                 {{ __('Already registered?') }}
             </a>
 

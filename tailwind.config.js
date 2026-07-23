@@ -11,8 +11,18 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                ink: 'var(--color-ink)',
+                cloud: 'var(--color-cloud)',
+                signal: 'var(--color-signal)',
+                ember: 'var(--color-ember)',
+                slate: 'var(--color-slate)',
+                line: 'var(--color-line)',
+            },
             fontFamily: {
-                sans: ['Outfit', ...defaultTheme.fontFamily.sans],
+                sans: ['"IBM Plex Sans"', ...defaultTheme.fontFamily.sans],
+                heading: ['"Space Grotesk"', ...defaultTheme.fontFamily.sans],
+                mono: ['"IBM Plex Mono"', ...defaultTheme.fontFamily.mono],
             },
         },
     },

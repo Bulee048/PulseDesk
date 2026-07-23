@@ -12,7 +12,10 @@ class RegistrationTest extends TestCase
 
     public function test_registration_screen_can_be_rendered(): void
     {
-        $response = $this->get('/register');
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $this->app->instance(\App\Models\Organization::class, $org);
+
+        $response = $this->get('http://test-org.pulsedesk.test/register');
 
         $response
             ->assertOk()
@@ -21,6 +24,9 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $this->app->instance(\App\Models\Organization::class, $org);
+
         $component = Volt::test('pages.auth.register')
             ->set('name', 'Test User')
             ->set('email', 'test@example.com')
@@ -29,7 +35,7 @@ class RegistrationTest extends TestCase
 
         $component->call('register');
 
-        $component->assertRedirect(route('dashboard', absolute: false));
+        $component->assertRedirect(route('tickets.index', ['tenant' => $org->slug]));
 
         $this->assertAuthenticated();
     }

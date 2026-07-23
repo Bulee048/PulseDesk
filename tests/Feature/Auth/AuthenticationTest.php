@@ -13,7 +13,7 @@ class AuthenticationTest extends TestCase
 
     public function test_login_screen_can_be_rendered(): void
     {
-        $response = $this->get('/login');
+        $response = $this->get('http://admin.pulsedesk.test/login');
 
         $response
             ->assertOk()
@@ -22,7 +22,9 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
 
         $component = Volt::test('pages.auth.login')
             ->set('form.email', $user->email)
@@ -32,7 +34,7 @@ class AuthenticationTest extends TestCase
 
         $component
             ->assertHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('tickets.index', ['tenant' => $org->slug]));
 
         $this->assertAuthenticated();
     }
@@ -56,11 +58,13 @@ class AuthenticationTest extends TestCase
 
     public function test_navigation_menu_can_be_rendered(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 
-        $response = $this->get('/dashboard');
+        $response = $this->get('http://test-org.pulsedesk.test/tickets');
 
         $response
             ->assertOk()
@@ -69,7 +73,10 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_logout(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 

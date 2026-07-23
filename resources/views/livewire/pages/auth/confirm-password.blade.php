@@ -29,12 +29,13 @@ new #[Layout('layouts.guest')] class extends Component
 
         session(['auth.password_confirmed_at' => time()]);
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $tenant = app()->has(\App\Models\Organization::class) ? app(\App\Models\Organization::class)->slug : null;
+        $this->redirectIntended(default: route('dashboard', $tenant ? ['tenant' => $tenant] : [], absolute: false), navigate: true);
     }
 }; ?>
 
 <div>
-    <div class="mb-4 text-sm text-gray-600">
+    <div class="mb-4 text-sm text-slate">
         {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
     </div>
 

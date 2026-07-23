@@ -13,10 +13,28 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(function (Request $request) {
+            return url('/login');
+        });
+
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->user() && $request->user()->hasRole('super_admin')) {
+                return route('super.dashboard');
+            }
+            if ($request->user() && $request->user()->organization) {
+                return route('dashboard', ['tenant' => $request->user()->organization->slug]);
+            }
+            return '/';
+        });
+
+        $middleware->web(append: [
+            \App\Http\Middleware\ResolveTenant::class,
+        ]);
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'tenant' => \App\Http\Middleware\ResolveTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

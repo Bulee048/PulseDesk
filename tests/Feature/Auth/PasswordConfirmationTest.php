@@ -15,7 +15,7 @@ class PasswordConfirmationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/confirm-password');
+        $response = $this->actingAs($user)->get('http://admin.pulsedesk.test/confirm-password');
 
         $response
             ->assertSeeVolt('pages.auth.confirm-password')
@@ -24,7 +24,10 @@ class PasswordConfirmationTest extends TestCase
 
     public function test_password_can_be_confirmed(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 
@@ -34,13 +37,15 @@ class PasswordConfirmationTest extends TestCase
         $component->call('confirmPassword');
 
         $component
-            ->assertRedirect('/dashboard')
+            ->assertRedirect(route('dashboard', ['tenant' => $org->slug], absolute: false))
             ->assertHasNoErrors();
     }
 
     public function test_password_is_not_confirmed_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 

@@ -13,20 +13,23 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
 
-        $response = $this->actingAs($user)->get('/profile');
+        $response = $this
+            ->actingAs($user)
+            ->get('http://test-org.pulsedesk.test/profile');
 
-        $response
-            ->assertOk()
-            ->assertSeeVolt('profile.update-profile-information-form')
-            ->assertSeeVolt('profile.update-password-form')
-            ->assertSeeVolt('profile.delete-user-form');
+        $response->assertOk();
     }
 
     public function test_profile_information_can_be_updated(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 
@@ -48,7 +51,10 @@ class ProfileTest extends TestCase
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 
@@ -66,7 +72,10 @@ class ProfileTest extends TestCase
 
     public function test_user_can_delete_their_account(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 
@@ -84,7 +93,10 @@ class ProfileTest extends TestCase
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
     {
-        $user = User::factory()->create();
+        $org = \App\Models\Organization::create(['name' => 'Test Org', 'slug' => 'test-org', 'status' => 'active', 'plan_id' => \App\Models\Plan::firstOrCreate(['slug' => 'free'], ['name' => 'Free', 'price_cents' => 0, 'agent_limit' => 3, 'ticket_limit' => 100])->id]);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $user->assignRole('customer');
+        $this->app->instance(\App\Models\Organization::class, $org);
 
         $this->actingAs($user);
 

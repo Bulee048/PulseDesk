@@ -21,12 +21,15 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('restrict');
             $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('agent_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->addColumn('tsvector', 'search_vector')->nullable();
+            if (config('database.default') === 'pgsql') {
+                $table->addColumn('tsvector', 'search_vector')->nullable();
+            }
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
         });
-        
-        DB::statement('CREATE INDEX tickets_search_vector_gin ON tickets USING GIN(search_vector);');
+                if (config('database.default') === 'pgsql') {
+            DB::statement('CREATE INDEX tickets_search_vector_gin ON tickets USING GIN(search_vector);');
+        }
     }
 
     /**

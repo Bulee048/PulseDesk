@@ -18,9 +18,35 @@ class CreateTicket extends Component
     public $category_id = '';
     public $priority = 'medium';
     public $attachment;
+    public $categories;
+
+    public function mount()
+    {
+        $org = app(\App\Models\Organization::class);
+        $this->categories = Category::where('organization_id', $org->id)->get();
+        
+        if (request()->has('category')) {
+            $this->category_id = request()->query('category');
+        }
+    }
 
     public function save()
     {
+        $org = app(\App\Models\Organization::class);
+        $plan = \App\Models\Plan::find($org->plan_id);
+
+        if ($plan && $plan->ticket_limit_per_month !== null) {
+            $ticketCount = \App\Models\Ticket::where('organization_id', $org->id)
+                ->whereMonth('created_at', \Carbon\Carbon::now()->month)
+                ->whereYear('created_at', \Carbon\Carbon::now()->year)
+                ->count();
+
+            if ($ticketCount >= $plan->ticket_limit_per_month) {
+                $this->addError('limit', 'Your workspace has reached its monthly ticket limit. Please contact support or upgrade your plan.');
+                return;
+            }
+        }
+
         $validated = $this->validate([
             'subject' => 'required|min:5',
             'description' => 'required|min:10',
@@ -51,7 +77,7 @@ class CreateTicket extends Component
         }
 
         session()->flash('status', 'Ticket successfully created.');
-        return $this->redirectRoute('tickets.index', navigate: true);
+        return $this->redirectRoute('tickets.index', ['tenant' => $org->slug], navigate: true);
     }
 
     public function render()

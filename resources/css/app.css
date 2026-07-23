@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --color-ink: #14181F;
+        --color-cloud: #F6F4EF;
+        --color-signal: #3FA796;
+        --color-ember: #E2703A;
+        --color-slate: #5B6472;
+        --color-line: #DAD6CC;
+    }
+    
+    body {
+        @apply bg-cloud text-ink font-sans antialiased;
+    }
+
+    input, select, textarea, button {
+        @apply focus:outline-none focus:ring-2 focus:ring-signal focus:border-signal transition-all duration-200;
+    }
+}
+
+@layer utilities {
+    .animate-pulse-strip {
+        animation: pulse-strip 1.5s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-pulse-strip {
+            animation: none;
+            opacity: 1;
+            transform: scaleX(1);
+            background-color: var(--color-signal);
+            transition: background-color 0.5s ease;
+        }
+    }
+
+    @keyframes pulse-strip {
+        0% { opacity: 0; transform: scaleX(0); background-color: var(--color-signal); }
+        10% { opacity: 1; transform: scaleX(1); background-color: var(--color-signal); }
+        50% { opacity: 1; background-color: var(--color-ember); }
+        90% { opacity: 1; transform: scaleX(1); background-color: var(--color-signal); }
+        100% { opacity: 0; transform: scaleX(0); background-color: var(--color-signal); }
+    }
+}
